@@ -29,6 +29,7 @@ public class IncomingDataCaller extends Thread {
                     listener.messageReceived(message);
             } catch (IOException | ClassNotFoundException ex) {
                 System.out.println("SmartInputStream : closed input stream");
+                System.err.println(ex);
                 if((closeListener != null)&&running)
                     closeListener.run();
                 running = false;

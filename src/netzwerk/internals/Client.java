@@ -53,7 +53,7 @@ public abstract class Client {
     public void sendMessage(Message message) {
         if(socket!=null && socket.isConnected()) {      // check to socket is ready to send data
             System.out.println("Client : send message " + 
-                    message.getClass().getSimpleName() + " to " + UID);
+                    message.getClass().getSimpleName() + " UID : " + UID);
             try {
                 out.writeObject(message);
                 out.flush();
@@ -86,5 +86,8 @@ public abstract class Client {
     }
     public void setUID(String UID) {
         this.UID = UID;
+    }
+    public boolean isConnected() {
+        return socket!=null && socket.isConnected();
     }
 }

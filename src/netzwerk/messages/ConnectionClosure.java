@@ -16,7 +16,8 @@ public class ConnectionClosure extends Message {
     }
     @Override
     public void onServerReceive(ServerClient client) {
-        client.getConnection().close(client);
+        if(client.getConnection()!=null)
+            client.getConnection().close(client);
     }
 
     @Override

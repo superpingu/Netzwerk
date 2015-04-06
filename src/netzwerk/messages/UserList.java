@@ -1,7 +1,7 @@
 
 package netzwerk.messages;
 
-import netzwerk.ServerClient;
+import netzwerk.*;
 
 /*
  *
@@ -9,6 +9,9 @@ import netzwerk.ServerClient;
 public class UserList extends BlockingMessage {
     private String[] users;
     
+    public static String[] get(Connector server) {
+        return ((UserList)server.sendBlockingMessage(new UserList())).getUsers();
+    }
     @Override
     public void onServerReceive(ServerClient client) {
         users = ServerClient.getUserList();

@@ -6,6 +6,7 @@ import netzwerk.internals.*;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -22,22 +23,28 @@ public class Connector extends Client {
     }
 
     /* connecter la socket TCP au serveur distant.*/
-    public void connect(byte[] serverIp, int port) {
+    public void connect(byte[] serverIp, int port) throws UnknownHostException {
         // open socket connected to server
         try {
-            socket = new Socket(InetAddress.getByAddress(serverIp), port);
-            System.out.println("RemotePen : connecting to the server" ); 
-        } catch (UnknownHostException e) {
-            System.err.println("RemotePen : Cannot find specified host : " + serverIp);
-            System.err.println(e);
+            socket = new Socket();
+            socket.connect(
+                    new InetSocketAddress(InetAddress.getByAddress(serverIp), port),
+                    timeOutDelay);
+            System.out.println("Connector : connecting to the server" ); 
         } catch (IOException e) {
-            System.err.println("RemotePen : problem with I/O");
+            System.err.println("Connector : problem with I/O");
             System.err.println(e);
+            throw new UnknownHostException();
         }
-        connect(socket); // connecter les flux d'entrée/sortie
+        if(socket!=null) {
+            connect(socket); // connecter les flux d'entrée/sortie
         
-        // handshake : on envoie notre UID au serveur pour que les autres clients puissent nous identifier
-        sendMessage(new UID(UID));
+            // handshake : on envoie notre UID au serveur pour que les autres clients puissent nous identifier
+            sendMessage(new UID(UID));
+        } else {
+            System.err.println("Connector : cannot connect to the specified IP");
+            throw new UnknownHostException();
+        }
     }    
     
     // send a message and wait for the answer (returned message has to be the same class)
@@ -48,10 +55,10 @@ public class Connector extends Client {
             this.wait(1000);
         } catch (InterruptedException ex) {}
 
-        if(lastMessage!=null && message.getClass().isInstance(lastMessage))
+        if(lastMessage!=null)
             return (BlockingMessage) lastMessage;
         else
-            System.err.println("RemotePen : reception timeout ! No packet received");
+            System.err.println("Connector : reception timeout ! No packet received");
 
         return null;
     }
@@ -84,7 +91,7 @@ public class Connector extends Client {
     // appelée si le flux d'entrée est fermé (symptome que le serveur s'est déconnecté)
     @Override
     protected void onClose() {
-        System.out.println("Remote Pen: connection lost !");
+        System.out.println("Connector : connection lost !");
         close();
     }
     
@@ -105,5 +112,10 @@ public class Connector extends Client {
 
     public Message getLastMessage() {
         return lastMessage;
-    }   
+    }
+    @Override
+    public void setUID(String UID) {
+        super.setUID(UID);
+        sendMessage(new UID(UID));
+    }
 }
